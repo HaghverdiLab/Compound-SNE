@@ -1,7 +1,7 @@
 import compoundsne as cs
 import anndata as ad 
 
-adata = ad.read_h5ad('sample_data/bone_marrow_scRNA.h5ad')
+adata = ad.read_h5ad('sample_data/data.h5ad')
 
 '''
 set some basic parameters
