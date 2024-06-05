@@ -16,7 +16,7 @@ def determineReferences(adata, reference_list=None):
 	- indices of reference patients
 	'''
 
-	batch_obs = adata.uns['aligater_params']['batch_obs']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
 	batches = list(set(adata.obs[batch_obs].tolist()))
 
 	if not reference_list:
@@ -69,7 +69,7 @@ def determineReferences(adata, reference_list=None):
 
 
 def primaryAlignment(adata):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
 	batches = list(set(adata.obs[batch_obs].tolist()))
 	labels = []
 	for b in batches:
@@ -97,9 +97,10 @@ def primaryAlignment(adata):
 
 
 def embedReferences(adata):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
-	perplexity = adata.uns['aligater_params']['perplexity']
-	force = adata.uns['aligater_params']['force']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
+	perplexity = adata.uns['alignment_params']['perplexity']
+	force = adata.uns['alignment_params']['force']
+	n_jobs = adata.uns['alignment_params']['n_jobs']
 
 	nCellTypes = int(np.max(adata.obs['annotation_encoded'].tolist())+1) # assuming proper encoding, cell types are [0, 1, 2, ..., n_types-1]
 	centers = np.zeros((nCellTypes, 2))	
@@ -108,7 +109,8 @@ def embedReferences(adata):
 				 Yinit=adata.obsm['Y_init'][adata.obs[batch_obs]==r], 
 				 centers=centers, 
 				 labels=adata.obs['annotation_encoded'][adata.obs[batch_obs]==r].tolist(), 
-				 perplexity=perplexity, force=force)
+				 perplexity=perplexity, force=force,
+				 n_jobs=n_jobs)
 
 		adata.obsm['X_tsne_full_alignment'][adata.obs[batch_obs]==r] = np.array(Y)
 		centers_prev = centers.copy()
@@ -127,26 +129,29 @@ def embedReferences(adata):
 
 
 def embedIndependent(adata, sample):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
-	perplexity = adata.uns['aligater_params']['perplexity']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
+	perplexity = adata.uns['alignment_params']['perplexity']
+	n_jobs = adata.uns['alignment_params']['n_jobs']
 
 	Y = TSNE(adata.obsm['X_pca_transformed'][adata.obs[batch_obs]==sample],
-			 perplexity=perplexity, force=0.0)
+			 perplexity=perplexity, force=0.0, n_jobs=n_jobs)
 	adata.obsm['X_tsne_independent'][adata.obs[batch_obs]==sample] = np.array(Y)
 	
 
 
 def embedSample(adata, sample, alignment):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
 	centers = adata.uns['embedding_centers']
-	perplexity = adata.uns['aligater_params']['perplexity']
-	force = adata.uns['aligater_params']['force']
+	perplexity = adata.uns['alignment_params']['perplexity']
+	force = adata.uns['alignment_params']['force']
+	n_jobs = adata.uns['alignment_params']['n_jobs']
 	if alignment == 'primary':
 		Y = TSNE(adata.obsm['X_pca_transformed'][adata.obs[batch_obs]==sample], 
 				 Yinit=adata.obsm['Y_init'][adata.obs[batch_obs]==sample], 
 				 centers=centers, 
 				 labels=adata.obs['annotation_encoded'][adata.obs[batch_obs]==sample], 
-				 perplexity=perplexity, force=0.0)
+				 perplexity=perplexity, force=0.0,
+				 n_jobs=n_jobs)
 		adata.obsm['X_tsne_primary_alignment'][adata.obs[batch_obs]==sample] = np.array(Y)
 	elif alignment == 'full':
 		Y = TSNE(adata.obsm['X_pca_transformed'][adata.obs[batch_obs]==sample], 

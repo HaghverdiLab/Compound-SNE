@@ -87,61 +87,14 @@ def compareNeighborhoods(n1, n2):
 	return np.mean(acc)
 
 
-def loadProjections(projDir, samples, projectionFolders):
-	'''
-	ARGS
-	----
-	- projDir -> project directory containing the folders: labels/encoded -> integer encoded labels for each cell
-														   projections/... -> folders containing various methods of projecting
-	- samples -> list of sample names (with extension)
-	- projectionFolders -> folders in projections/ that contain the projections of each sample
-
-	Loads different projections and labels
-
-	Returns
-	-------
-	- list of lists containing projections for each sample
-	- list of cell labels
-	'''
-
-	labels = [np.loadtxt(projDir+'/labels/encoded/'+p) for p in samples]
-	projections = []
-	for a in projectionFolders:
-		ys = [np.loadtxt(projDir+'/projections/'+a+'/'+p) for p in samples]
-		projections.append(ys)
-
-	return projections, labels
-
-
-def loadReferences(projDir, samples, referenceFolder):
-	'''
-	ARGS
-	----
-	- projDir -> project directory containing the folders: labels/encoded -> integer encoded labels for each cell
-														   projections/... -> folders containing various methods of projecting
-	- samples -> list of sample names (with extension)
-	- referenceFolder -> folder in projections/ corresponding to the reference (usually the independent embeddings)
-
-	Loads different projections
-
-	Returns
-	-------
-	- list of lists containing projections for each sample
-	'''
-
-	projections = [np.loadtxt(projDir+'/projections/'+referenceFolder+'/'+p) for p in samples]
-
-	return projections
-
-
 def structurePreservation(adata, alignments=['X_tsne_full_alignment'], k_knn=10):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
 
 	sampleNames = list(set(adata.obs[batch_obs]))
 	knn = []
 	for align in alignments:
-		knnS = [adata[adata.obs[batch_obs]==s].obsm[align] for s in sampleNames]
-		knnR = [adata[adata.obs[batch_obs]==s].obsm['X_tsne_independent'] for s in sampleNames]
+		knnS = [calc_knn(adata[adata.obs[batch_obs]==s].obsm[align], k=k_knn) for s in sampleNames]
+		knnR = [calc_knn(adata[adata.obs[batch_obs]==s].obsm['X_tsne_independent'], k=k_knn) for s in sampleNames]
 		knn.append([compareNeighborhoods(s, r) for (s,r) in zip(knnS, knnR)])
 
 	stats = []
@@ -162,11 +115,11 @@ def structurePreservation(adata, alignments=['X_tsne_full_alignment'], k_knn=10)
 
 
 def sampleAlignment(adata, alignments=['X_tsne_full_alignment']):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
 	sampleNames = list(set(adata.obs[batch_obs]))
 
 
-	labels = [adata.obs['annotation_encoded'][adata.obs[batch_obs]==s] for s in sampleNames]
+	labels = [adata.obs['annotation_encoded'][adata.obs[batch_obs]==s].tolist() for s in sampleNames]
 	sharedLabels = list(set.intersection(*map(set, labels)))
 
 	distances = []

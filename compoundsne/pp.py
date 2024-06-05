@@ -5,17 +5,20 @@ from sklearn.preprocessing import LabelEncoder
 
 from .utils import *
 
-def setParameters(adata, batch_obs, annotations=None, perplexity=100, force=0.25):
+def setParameters(adata, batch_obs, annotations=None, perplexity=100, force=0.25, n_jobs=2):
 	params = {'batch_obs': batch_obs,
 			  'perplexity': perplexity,
 			  'force': force,
-			  'annotations': annotations}
+			  'annotations': annotations,
+			  'n_jobs': n_jobs}
 
-	adata.uns['aligater_params'] = params
+	adata.uns['alignment_params'] = params
+
+	adata.obsm['X_tsne_independent'] = np.zeros((adata.X.shape[0], 2))
 
 
 def generateAnnotations(adata, n_clusters, reference_name):
-	batch_obs = adata.uns['aligater_params']['batch_obs']
+	batch_obs = adata.uns['alignment_params']['batch_obs']
 
 	batches = list(set(adata.obs[batch_obs]))
 	labels_r, centers = getClusters(adata[adata.obs[batch_obs]==reference_name].obsm['X_pca'], n_clusters)
@@ -43,14 +46,14 @@ def generateAnnotations(adata, n_clusters, reference_name):
 				annotations[i] = l[idx]
 				idx += 1
 			if idx > max_idx:
-				exit('i think theres an issue with kmeans clustering')
+				exit('I think theres an issue with kmeans clustering')
 
 	adata.obs['annotation'] = annotations
-	adata.uns['aligater_params']['annotations'] = 'annotation'
+	adata.uns['alignment_params']['annotations'] = 'annotation'
 
 
 def encodeAnnotations(adata):
-	annotation = adata.uns['aligater_params']['annotations']
+	annotation = adata.uns['alignment_params']['annotations']
 	if not annotation:
 		exit('No annotations provided, run generateAnnotations()')
 

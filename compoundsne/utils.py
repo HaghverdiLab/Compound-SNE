@@ -46,7 +46,7 @@ def alignment_findCenters(X, labels, sharedCellTypes):
 	return parsedCenters
 
 
-def TSNE(X, Yinit=None, centers=None, labels=None, perplexity=100, max_iter=750, early_exag=4, init_moment=0.5, final_moment=0.8, switch_iter=250, force=0.25, n_jobs=-1):
+def TSNE(X, Yinit=None, centers=None, labels=None, perplexity=100, K_star=2, max_iter=750, early_exag=4, init_moment=0.5, final_moment=0.8, switch_iter=250, force=0.25, n_jobs=-1):
 	'''
 	ARGS
 	----
@@ -79,11 +79,14 @@ def TSNE(X, Yinit=None, centers=None, labels=None, perplexity=100, max_iter=750,
 		P = affinity.PerplexityBasedNN(X, perplexity=perplexity)
 	elif perplexity == 0:
 		'''
-		based on Kobak 2019, Art of TSNE
+		based on https://github.com/cdebodt/Multi-scale_t-SNE/blob/main/mstSNE.py#L875
 		'''
-		perp1 = 30
-		perp2 = np.max((30, X.shape[0]/100))
-		P = affinity.Multiscale(X, [perp1, perp2])
+		N = X.shape[0]
+		L_min = 5
+		L_max = int(round(np.log2(N/K_star)))
+		L = L_max - L_min + 1
+		perplexities = 2**np.linspace(L_min-1, L_max-1, L)*K_star
+		P = affinity.Multiscale(X, perplexities)
 	else:
 		print()
 		print('Perplexity must be >= 0')
