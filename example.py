@@ -108,7 +108,7 @@ alignments (optional, default=['X_tsne_full_alignment']) = list of alignment met
 '''
 
 cs.al.structurePreservation(adata, alignments=['X_tsne_primary_alignment', 'X_tsne_full_alignment'])
-cs.al.sampleAlignment(adata, alignments=['X_tsne_primary_alignment', 'X_tsne_full_alignment'])
+cs.al.sampleAlignment(adata, alignments=['X_tsne_independent', 'X_tsne_primary_alignment', 'X_tsne_full_alignment'])
 
 adata.write('embeddings.h5ad')
 
