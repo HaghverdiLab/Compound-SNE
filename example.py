@@ -64,7 +64,7 @@ embeds references (starting with the primary and progressing through secondaries
 and finds the annotation centers in embedding space, which are used to align
 the remaining samples
 '''
-al.tl.embedReferences(adata)
+cs.tl.embedReferences(adata)
 
 '''
 go through the remaining samples and perform tsne with forces to achieve the full
@@ -86,7 +86,7 @@ adata (required) = adata object
 sample (required) = name of sample to embed
 )
 '''
-for s in ['BM1', 'BM2', 'BM3', 'Aged1', 'Aged2', 'Aged3']:
+for s in ['BM1', 'BM2']:
 	cs.tl.embedIndependent(adata, s)
 	cs.tl.embedSample(adata, s, 'primary')
 	if s not in adata.uns['references']:
@@ -108,7 +108,7 @@ alignments (optional, default=['X_tsne_full_alignment']) = list of alignment met
 '''
 
 cs.al.structurePreservation(adata, alignments=['X_tsne_primary_alignment', 'X_tsne_full_alignment'])
-cs.al.alignment(adata, alignments=['X_tsne_primary_alignment', 'X_tsne_full_alignment'])
+cs.al.sampleAlignment(adata, alignments=['X_tsne_primary_alignment', 'X_tsne_full_alignment'])
 
 adata.write('embeddings.h5ad')
 
