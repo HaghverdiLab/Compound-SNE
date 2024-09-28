@@ -1,6 +1,6 @@
 # Compound-SNE
 
-Package code for Compound-SNE (https://www.biorxiv.org/content/10.1101/2024.02.29.582536v1). Download compoundsne into working directory.
+Package code for Compound-SNE ([https://www.biorxiv.org/content/10.1101/2024.02.29.582536v1](https://academic.oup.com/bioinformatics/article/40/7/btae471/7721017)). Download compoundsne into working directory.
 
 # Usage
 After processing data accordingly, run the following commands to embed with Compound-SNE. Note: data must be saved in an AnnData object containing .obsm['X_pca']. A full example of usage is in example.py.
